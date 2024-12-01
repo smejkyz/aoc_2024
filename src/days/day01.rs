@@ -1,6 +1,4 @@
 use std::fs;
-use itertools::Itertools;
-use num::abs;
 
 pub fn solve() {
     let input_path = "/Users/tomas/RustroverProjects/aoc_2024/src/inputs/day01.txt";
@@ -11,6 +9,8 @@ pub fn solve() {
     let p2 = solve_part_2(&left_values, &right_values);
     println!("Part 2: {:?}", p2);
 
+    assert_eq!(p1, 1319616);
+    assert_eq!(p2, 27267728);
 }
 
 fn parse_input(raw_input: &str) -> (Vec<i32>,Vec<i32>){
@@ -18,7 +18,6 @@ fn parse_input(raw_input: &str) -> (Vec<i32>,Vec<i32>){
     let mut right_values: Vec<i32> = Vec::new();
     for line in raw_input.lines(){
         let splitted: Vec<&str> = line.split(' ').collect();
-        println!("{:?}", splitted);
         let left_value: i32 = splitted[0].parse().unwrap();
         let right_value: i32 = splitted[3].parse().unwrap();
         left_values.push(left_value);
@@ -32,17 +31,22 @@ fn solve_part_1(left_values: &Vec<i32>, right_values: &Vec<i32>) -> usize{
     left_values_sorted.sort();
     let mut right_values_sorted = right_values.clone();
     right_values_sorted.sort();
-    let diff = elementwise_subtraction(left_values_sorted, right_values_sorted);
-    let score = diff.iter().map(|a| a.abs()).sum::<i32>() as usize;
+
+    let score = left_values_sorted
+        .into_iter()
+        .zip(right_values_sorted).map(|(a,b)| (a-b).abs())
+        .sum::<i32>() as usize;
+
     score
 }
 
-fn elementwise_subtraction(vec_a: Vec<i32>, vec_b: Vec<i32>) -> Vec<i32> {
-    vec_a.into_iter().zip(vec_b).map(|(a, b)| a - b).collect()
-}
+
 
 fn solve_part_2(left_values: &Vec<i32>, right_values: &Vec<i32>) -> usize{
-    left_values.iter().map(|value | value * number_of_occurences(value, right_values)).sum::<i32>() as usize
+    left_values
+        .iter()
+        .map(|value | value * number_of_occurences(value, right_values))
+        .sum::<i32>() as usize
 }
 
 fn number_of_occurences(value: &i32, right_values: &Vec<i32>) -> i32 {

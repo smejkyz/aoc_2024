@@ -230,3 +230,7 @@ pub fn parse_2d_input(raw_input: &str) -> Array2D{
 
     array_2d
 }
+
+fn elementwise_subtraction(vec_a: Vec<i32>, vec_b: Vec<i32>) -> Vec<i32> {
+    vec_a.into_iter().zip(vec_b).map(|(a, b)| a - b).collect()
+}
