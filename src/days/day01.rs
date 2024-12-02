@@ -3,7 +3,7 @@ use std::fs;
 pub fn solve() {
     let input_path = "/Users/tomas/RustroverProjects/aoc_2024/src/inputs/day01.txt";
     let raw_input = fs::read_to_string(input_path).unwrap();
-    let (left_values, right_values)= parse_input(&raw_input);
+    let (left_values, right_values) = parse_input(&raw_input);
     let p1 = solve_part_1(&left_values, &right_values);
     println!("Part 1: {:?}", p1);
     let p2 = solve_part_2(&left_values, &right_values);
