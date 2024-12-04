@@ -1,3 +1,4 @@
+use std::error::Error;
 use itertools::Itertools;
 
 const W_DAY: usize = 10;
@@ -50,37 +51,37 @@ pub fn print_day(day: u8, p1: f64, p2: f64) {
 
 #[derive(Debug)]
 #[derive(PartialEq)]
-pub struct Array2D {
+pub struct Array2D<T:> {
     rows: usize,
     cols: usize,
-    data: Vec<Vec<i32>>,
+    data: Vec<Vec<T>>,
 }
 
-impl Array2D {
+impl<T: Clone + std::fmt::Debug + std::str::FromStr> Array2D<T> {
     // Constructor to create a new 2D array with default value
-    pub fn new(rows: usize, cols: usize, default_value: i32) -> Self {
-        let data = vec![vec![default_value; cols]; rows];
+    pub fn new(rows: usize, cols: usize, default_value: T) -> Self {
+        let data = vec![vec![default_value.clone(); cols]; rows];
         Array2D { rows, cols, data }
     }
 
-    pub fn get_rows(&self) -> usize{
+    pub fn get_rows(&self) -> usize {
         self.rows
     }
 
-    pub fn get_row(&self, row: usize) -> Vec<i32>{
+    pub fn get_row(&self, row: usize) -> Vec<T> {
         self.data[row].clone()
     }
 
-    pub fn get_column(&self, col: usize) -> Vec<i32>{
-        self.data.iter().map(|row| row[col]).collect()
+    pub fn get_column(&self, col: usize) -> Vec<T> {
+        self.data.iter().map(|row| row[col].clone()).collect()
     }
 
-    pub fn get_cols(&self) -> usize{
+    pub fn get_cols(&self) -> usize {
         self.cols
     }
     // Method to get a value at a specific position
-    pub fn get(&self, row: usize, col: usize) -> i32 {
-        self.data[row][col]
+    pub fn get(&self, row: usize, col: usize) -> T {
+        self.data[row][col].clone()
         // if row < self.rows && col < self.cols {
         //     Some(self.data[row][col])
         // } else {
@@ -88,61 +89,61 @@ impl Array2D {
         // }
     }
 
-    pub fn get_4_neighbours(&self, row: usize, col: usize) -> Vec<i32>{
-        let mut result: Vec<i32> = Vec::new();
-        if row > 0{
+    pub fn get_4_neighbours(&self, row: usize, col: usize) -> Vec<T> {
+        let mut result: Vec<T> = Vec::new();
+        if row > 0 {
             // add upper
-            result.push(self.get(row-1, col));
+            result.push(self.get(row - 1, col));
         }
-        if row < self.rows - 1{
+        if row < self.rows - 1 {
             // add below:
-            result.push(self.get(row+1, col))
+            result.push(self.get(row + 1, col))
         }
-        if col > 0{
+        if col > 0 {
             //add left
-            result.push(self.get(row, col -1))
+            result.push(self.get(row, col - 1))
         }
-        if col < self.cols - 1{
-            result.push(self.get(row, col +1))
+        if col < self.cols - 1 {
+            result.push(self.get(row, col + 1))
         }
         result
     }
 
-    pub fn get_4_neighbours_coor(&self, row: usize, col: usize) -> Vec<(usize, usize)>{
+    pub fn get_4_neighbours_coor(&self, row: usize, col: usize) -> Vec<(usize, usize)> {
         let mut result: Vec<(usize, usize)> = Vec::new();
-        if row > 0{
+        if row > 0 {
             // add upper
-            result.push((row-1, col));
+            result.push((row - 1, col));
         }
-        if row < self.rows - 1{
+        if row < self.rows - 1 {
             // add below:
-            result.push((row+1, col))
+            result.push((row + 1, col))
         }
-        if col > 0{
+        if col > 0 {
             //add left
-            result.push((row, col -1))
+            result.push((row, col - 1))
         }
-        if col < self.cols - 1{
-            result.push((row, col +1))
+        if col < self.cols - 1 {
+            result.push((row, col + 1))
         }
         result
     }
 
-    pub fn get_8_neighbours_coor(&self, row: usize, col: usize) -> Vec<(usize, usize)>{
+    pub fn get_8_neighbours_coor(&self, row: usize, col: usize) -> Vec<(usize, usize)> {
         let mut result = self.get_4_neighbours_coor(row, col);
-        if row > 0{
+        if row > 0 {
             if col > 0 {
                 result.push((row - 1, col - 1));
             }
-            if col < self.cols - 1{
+            if col < self.cols - 1 {
                 result.push((row - 1, col + 1))
             }
         }
-        if row < self.rows - 1{
+        if row < self.rows - 1 {
             if col > 0 {
                 result.push((row + 1, col - 1));
             }
-            if col < self.cols - 1{
+            if col < self.cols - 1 {
                 result.push((row + 1, col + 1))
             }
         }
@@ -152,7 +153,7 @@ impl Array2D {
 
 
     // Method to set a value at a specific position
-    pub fn set(&mut self, row: usize, col: usize, value: i32) -> Result<(), &'static str> {
+    pub fn set(&mut self, row: usize, col: usize, value: T) -> Result<(), &'static str> {
         if row < self.rows && col < self.cols {
             self.data[row][col] = value;
             Ok(())
@@ -160,48 +161,48 @@ impl Array2D {
             Err("Index out of bounds")
         }
     }
-    pub fn increase_by(&mut self, value: i32){
-        for (i, j) in (0..self.rows).cartesian_product(0..self.cols){
-            &self.set(i, j, self.get(i, j) + value);
-        }
-    }
+    // pub fn increase_by(&mut self, value: i32) {
+    //     for (i, j) in (0..self.rows).cartesian_product(0..self.cols) {
+    //         &self.set(i, j, self.get(i, j) + value);
+    //     }
+    // }
 
     // Method to display the 2D array
     pub fn display(&self) {
         for row in &self.data {
-            println!("{:?}", row);
+            println!("\n{:?}", row);
         }
     }
 
-    pub fn replace(&mut self, replaced_number: i32, replace_with: i32){
-        for (i, j) in (0..self.rows).cartesian_product(0..self.cols){
-            if self.get(i, j) == replaced_number{
-                &self.set(i, j, replace_with);
-            }
-        }
-    }
-    pub fn count(&self, number_of_interest: i32) -> i32{
-        let mut _count = 0;
-        for (i, j) in (0..self.rows).cartesian_product(0..self.cols){
-            if self.get(i, j) == number_of_interest{
-                _count += 1;
-            }
-        }
-        _count
-    }
-    pub fn sum(&self) -> i32{
-        let mut _sum = 0;
-        for row in &self.data{
-            let _row_sum: i32 = row.iter().sum();
-            _sum += _row_sum;
-        }
-        _sum
-    }
+    // pub fn replace(&mut self, replaced_number: i32, replace_with: i32) {
+    //     for (i, j) in (0..self.rows).cartesian_product(0..self.cols) {
+    //         if self.get(i, j) == replaced_number {
+    //             &self.set(i, j, replace_with);
+    //         }
+    //     }
+    // }
+    // pub fn count(&self, number_of_interest: i32) -> i32 {
+    //     let mut _count = 0;
+    //     for (i, j) in (0..self.rows).cartesian_product(0..self.cols) {
+    //         if self.get(i, j) == number_of_interest {
+    //             _count += 1;
+    //         }
+    //     }
+    //     _count
+    // }
+    // pub fn sum(&self) -> i32 {
+    //     let mut _sum = 0;
+    //     for row in &self.data {
+    //         let _row_sum: i32 = row.iter().sum();
+    //         _sum += _row_sum;
+    //     }
+    //     _sum
+    // }
 
     // Method to push a new row into the 2D array
-    pub fn push(&mut self, new_row: Vec<i32>) -> Result<(), &'static str> {
+    pub fn push(&mut self, new_row: Vec<T>) -> Result<(), &'static str> {
         if new_row.len() == self.cols || self.rows == 0 {
-            if self.rows == 0{
+            if self.rows == 0 {
                 self.cols = new_row.len();
             }
             self.data.push(new_row);
@@ -211,25 +212,41 @@ impl Array2D {
             Err("Length of the new row does not match the number of columns")
         }
     }
-}
+    pub fn parse_2d_input(raw_input: &str) -> Result<Self, T::Err> {
+        let data: Vec<Vec<T>> = raw_input
+            .lines()
+            .map(|line| {
+                line.chars()
+                    .map(|item| item.to_string().parse::<T>())
+                    .collect::<Result<Vec<T>, T::Err>>() // Collect and handle parsing errors
+            })
+            .collect::<Result<Vec<Vec<T>>, T::Err>>()?;
 
+        let rows = data.len();
+        let cols = if rows > 0 { data[0].len() } else { 0 };
 
-pub fn parse_2d_input(raw_input: &str) -> Array2D{
-    const RADIX: u32 = 10;
-    let mut array_2d = Array2D::new(0, 0, 0);
-    for line in raw_input.lines(){
-        let mut vector: Vec<i32> = Vec::new();
-        for char in line.chars(){
-            let digit = char.to_digit(10).unwrap_or(0) as i32;
-            vector.push(digit);
-        }
-        array_2d.push(vector);
-        //array_2d.display();
-        //println!("solution");
+        Ok(Array2D { rows, cols, data })
     }
 
-    array_2d
 }
+
+
+// pub fn parse_2d_input(raw_input: &str) -> Array2D{
+//     const RADIX: u32 = 10;
+//     let mut array_2d = Array2D::new(0, 0, 0);
+//     for line in raw_input.lines(){
+//         let mut vector: Vec<i32> = Vec::new();
+//         for char in line.chars(){
+//             let digit = char.to_digit(10).unwrap_or(0) as i32;
+//             vector.push(digit);
+//         }
+//         array_2d.push(vector);
+//         //array_2d.display();
+//         //println!("solution");
+//     }
+//
+//     array_2d
+// }
 
 fn elementwise_subtraction(vec_a: Vec<i32>, vec_b: Vec<i32>) -> Vec<i32> {
     vec_a.into_iter().zip(vec_b).map(|(a, b)| a - b).collect()
