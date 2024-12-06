@@ -51,13 +51,14 @@ pub fn print_day(day: u8, p1: f64, p2: f64) {
 
 #[derive(Debug)]
 #[derive(PartialEq)]
+#[derive(Clone)]
 pub struct Array2D<T:> {
     rows: usize,
     cols: usize,
     data: Vec<Vec<T>>,
 }
 
-impl<T: Clone + std::fmt::Debug + std::str::FromStr> Array2D<T> {
+impl<T: Clone + std::fmt::Debug + std::str::FromStr + std::cmp::PartialEq> Array2D<T> {
     // Constructor to create a new 2D array with default value
     pub fn new(rows: usize, cols: usize, default_value: T) -> Self {
         let data = vec![vec![default_value.clone(); cols]; rows];
@@ -160,6 +161,21 @@ impl<T: Clone + std::fmt::Debug + std::str::FromStr> Array2D<T> {
         } else {
             Err("Index out of bounds")
         }
+    }
+    pub fn where_value(& self, value: T) -> Vec<(usize, usize)> {
+        let mut result = Vec::new();
+        for (i, j) in (0..self.rows).cartesian_product(0..self.cols) {
+            if self.get(i, j) == value {
+                result.push((i, j));
+            }
+        }
+        result
+    }
+    pub fn is_on_boundary(& self, index: (usize, usize)) -> bool {
+        let (i, j) = index;
+        i == 0 || j == 0 || i == self.rows - 1 || j == self.cols - 1
+
+
     }
     // pub fn increase_by(&mut self, value: i32) {
     //     for (i, j) in (0..self.rows).cartesian_product(0..self.cols) {
