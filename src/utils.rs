@@ -58,7 +58,7 @@ pub struct Array2D<T:> {
     data: Vec<Vec<T>>,
 }
 
-impl<T: Clone + std::fmt::Debug + std::str::FromStr + std::cmp::PartialEq> Array2D<T> {
+impl<T: Clone + std::fmt::Debug + std::str::FromStr + std::cmp::PartialEq  + ToString> Array2D<T> {
     // Constructor to create a new 2D array with default value
     pub fn new(rows: usize, cols: usize, default_value: T) -> Self {
         let data = vec![vec![default_value.clone(); cols]; rows];
@@ -185,9 +185,16 @@ impl<T: Clone + std::fmt::Debug + std::str::FromStr + std::cmp::PartialEq> Array
 
     // Method to display the 2D array
     pub fn display(&self) {
+        // for row in &self.data {
+        //     println!("\n{:?}", row);
+        // }
+        let mut buffer: String = "".to_string();
         for row in &self.data {
-            println!("\n{:?}", row);
+            buffer += &row.iter().map(|el| el.to_string()).collect::<Vec<String>>().join("");
+            buffer += "\n";
         }
+        println!("{}", buffer);
+
     }
 
     // pub fn replace(&mut self, replaced_number: i32, replace_with: i32) {
