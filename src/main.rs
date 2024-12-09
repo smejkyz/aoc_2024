@@ -5,5 +5,5 @@ mod utils;
 
 fn main() {
     println!("Hello World!");
-    days::day08::solve();
+    days::day09::solve();
 }
