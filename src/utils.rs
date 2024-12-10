@@ -1,3 +1,5 @@
+use std::collections::{HashMap, VecDeque};
+use std::collections::HashSet;
 use std::error::Error;
 use itertools::Itertools;
 
@@ -252,6 +254,153 @@ impl<T: Clone + std::fmt::Debug + std::str::FromStr + std::cmp::PartialEq  + ToS
     }
 
 }
+
+pub fn multiple_bfs(
+    start: (usize, usize),
+    goals: &Vec<(usize, usize)>,
+    grid: &Array2D<i32>
+) -> Vec<Vec<(usize, usize)>>{
+
+    let mut visited: HashSet<(usize, usize)> = HashSet::new();
+    visited.insert(start);
+
+    let mut predecessors: HashMap<(usize, usize), Option<(usize, usize)>> = HashMap::new();
+    predecessors.insert(start, None);
+
+    let mut open: Vec<(usize, usize)> = Vec::new();
+    open.push(start);
+    let mut left_to_visit = goals.clone();
+    let mut currect = start.clone();
+    while open.len() > 0{
+        currect = open.pop().unwrap();
+        if left_to_visit.contains(&currect){
+            let index = left_to_visit.iter().position(|x| *x == currect).unwrap();
+            left_to_visit.remove(index);
+        }
+        if left_to_visit.len() == 0{
+            break;
+        }
+
+        for adjacent in grid.get_4_neighbours_coor(currect.0, currect.1){
+            if !visited.contains(&adjacent){
+                visited.insert(adjacent);
+                open.push(adjacent);
+                predecessors.insert(adjacent, Some(currect));
+            }
+        }
+    }
+    goals.iter().map(|goal| reconstruct_path(*goal, &predecessors)).collect()
+}
+
+pub fn multiple_bfs_with_one_step(
+    start: (usize, usize),
+    goals: &Vec<(usize, usize)>,
+    grid: &Array2D<i32>
+) -> Vec<Vec<(usize, usize)>>{
+
+    let mut visited: HashSet<(usize, usize)> = HashSet::new();
+    visited.insert(start);
+
+    let mut predecessors: HashMap<(usize, usize), Option<(usize, usize)>> = HashMap::new();
+    predecessors.insert(start, None);
+
+    let mut open: Vec<(usize, usize)> = Vec::new();
+    open.push(start);
+    let mut left_to_visit = goals.clone();
+    let mut currect = start.clone();
+    while open.len() > 0{
+        //println!("open states: {:?}", open);
+        //println!("left_to_visit: {:?}", left_to_visit);
+        currect = open.pop().unwrap();
+        if left_to_visit.contains(&currect){
+            let index = left_to_visit.iter().position(|x| *x == currect).unwrap();
+            left_to_visit.remove(index);
+            //println!("visited goal: {:?}", currect);
+        }
+        if left_to_visit.len() == 0{
+            break;
+        }
+
+        for adjacent in grid.get_4_neighbours_coor(currect.0, currect.1){
+            let diff_value = grid.get(adjacent.0, adjacent.1) - grid.get(currect.0, currect.1);
+
+            if !visited.contains(&adjacent) && diff_value == 1{
+                visited.insert(adjacent);
+                open.push(adjacent);
+                predecessors.insert(adjacent, Some(currect));
+            }
+        }
+    }
+    let mut resulting_paths = Vec::new();
+    for goal in goals{
+        if !left_to_visit.contains(&goal){
+            resulting_paths.push(reconstruct_path(*goal, &predecessors));
+        }else {
+            //println!("Was not able to find path to {:?}", goal);
+            resulting_paths.push(vec![]);
+        }
+    }
+    resulting_paths
+    //goals.iter().map(|goal| reconstruct_path(*goal, &predecessors)).collect()
+}
+
+pub fn find_all_paths_bfs_one_step(
+    start: (usize, usize),
+    goal: (usize, usize),
+    grid: &Array2D<i32>
+) -> Vec<Vec<(usize, usize)>>{
+    let mut all_paths: Vec<Vec<(usize, usize)>> = Vec::new();
+    // quee to store the paths
+    let mut q = VecDeque::new();
+
+    let mut path = Vec::new();
+    path.push(start);
+
+    q.push_back(path.clone());
+
+    while !q.is_empty(){
+        path = q.pop_front().unwrap();
+        let last = path[path.len() - 1];
+        // if the last vertex is desired destination, print the path
+        if last == goal{
+            //println!("path found: {:?}", path);
+            all_paths.push(path.clone());
+        }
+
+        //Traverse to all the nodes connected to
+        //current vertex and push new path to queue
+        for adjacent in grid.get_4_neighbours_coor(last.0, last.1){
+            let diff_value = grid.get(adjacent.0, adjacent.1) - grid.get(last.0, last.1);
+            if !path.contains(&adjacent) && diff_value == 1{
+                let mut new_path = path.clone();
+                new_path.push(adjacent);
+                q.push_back(new_path);
+            }
+        }
+    }
+    all_paths
+}
+
+
+pub fn reconstruct_path(
+    goal: (usize, usize),
+    predecessors: &HashMap<(usize, usize), Option<(usize, usize)>>
+) -> Vec<(usize, usize)>{
+    let mut path: Vec<(usize, usize)> = Vec::new();
+    let mut current = goal;
+    loop {
+        path.push(current);
+        if let Some(value) = predecessors.get(&current) {
+            match value {
+                Some((x, y)) => current = (x.clone(), y.clone()),
+                None => break,
+            }
+        }
+    }
+    path.reverse();
+    path
+}
+
 
 
 // pub fn parse_2d_input(raw_input: &str) -> Array2D{
